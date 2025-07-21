@@ -8,12 +8,9 @@ const RANGE = 'Points!A8:M';
 
 export default function SummaryPage() {
   const [data, setData] = useState([]);
-  const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`
-    )
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`)
       .then(res => res.json())
       .then(json => {
         const rows = json.values || [];
@@ -23,11 +20,10 @@ export default function SummaryPage() {
 
         for (let i = 0; i < rows.length; i++) {
           const row = rows[i];
+          if (row[3]?.toLowerCase().includes("max points")) continue;
           const itemName = row[4];
-          if (!itemName || /\d/.test(itemName)) continue;
-
+          if (/[0-9]/.test(itemName)) continue;
           const pts = parseFloat(row[5]) || 0;
-          if (pts === 0) continue;
 
           teamCols.forEach((colIdx, teamIdx) => {
             if (row[colIdx] && row[colIdx].toString().trim() === '1') {
@@ -44,13 +40,12 @@ export default function SummaryPage() {
         }));
 
         setData(result);
-        setTeams(result.map(t => t.team));
       });
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Bingo Team Progress</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-center">Bingo Team Progress</h1>
 
       <Card>
         <CardContent className="p-4">
@@ -80,10 +75,6 @@ export default function SummaryPage() {
           </ul>
         </CardContent>
       </Card>
-
-      <footer className="text-center text-sm text-muted mt-6">
-        Made by s59 for Mercenary Clan
-      </footer>
     </div>
   );
 }

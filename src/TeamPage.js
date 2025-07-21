@@ -1,5 +1,3 @@
-import { Card, CardContent } from './components/ui/card';
-
 import React, { useEffect, useState } from 'react';
 
 const SHEET_ID = '1CRoqK3szGdhIIlXG0gKA9BhjmRROmNba0tlur2V7qnM';
@@ -48,9 +46,8 @@ function TeamPage({ team }) {
       });
   }, [team]);
 
-  const [bossFilter, setBossFilter] = useState('all');
-    return (
-    <div className="p-6 space-y-6">
+  return (
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold">{team} – Item Progress</h2>
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
         {items.map((item, idx) => (

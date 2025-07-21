@@ -1,98 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import TeamPage from './TeamPage';
+import SummaryPage from './SummaryPage';
 
-const SHEET_ID = '1CRoqK3szGdhIIlXG0gKA9BhjmRROmNba0tlur2V7qnM';
-const API_KEY = 'AIzaSyBZchFlW_joIa7CnSSacm8oalKQqYayhyk';
-const RANGE = 'Points!A8:M';
+const teams = ['Team1', 'Team2', 'Team3', 'Team4', 'Team5', 'Team6'];
 
-export default function App() {
-  const [chartData, setChartData] = useState([]);
-  const [heatmapData, setHeatmapData] = useState({});
+function App() {
+  const [darkMode, setDarkMode] = useState(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
 
   useEffect(() => {
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`)
-      .then(res => res.json())
-      .then(json => {
-        const rows = json.values || [];
-        const teamCols = [7, 8, 9, 10, 11, 12];
-        const teamNames = ['Team1', 'Team2', 'Team3', 'Team4', 'Team5', 'Team6'];
-        const teamTotals = Array(6).fill(0);
-        const teamCompleted = Array(6).fill(0);
-        const heatmap = {};
-        let currentBoss = null;
-
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const boss = row[3] || currentBoss;
-          const pts = parseFloat(row[5]) || 0;
-          if (row[3]) currentBoss = row[3];
-
-          if (!heatmap[currentBoss]) {
-            heatmap[currentBoss] = Array(6).fill(0);
-          }
-
-          teamCols.forEach((colIdx, teamIdx) => {
-            if (row[colIdx] && row[colIdx].toString().trim() === '1') {
-              teamCompleted[teamIdx] += pts;
-              heatmap[currentBoss][teamIdx] += pts;
-            }
-            teamTotals[teamIdx] += pts;
-          });
-        }
-
-        const summary = teamNames.map((name, i) => ({
-          team: name,
-          points: teamCompleted[i],
-          completion: ((teamCompleted[i] / teamTotals[i]) * 100).toFixed(1)
-        }));
-
-        setChartData(summary);
-        setHeatmapData(heatmap);
-      });
-  }, []);
-
-  const teamNames = ['Team1', 'Team2', 'Team3', 'Team4', 'Team5', 'Team6'];
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
 
   return (
-    <div>
-      <h1>Bingo Team Progress</h1>
-
-      <h2>Points by Team</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <XAxis dataKey="team" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="points" fill="#82ca9d" />
-        </BarChart>
-      </ResponsiveContainer>
-
-      <h2 style={{ marginTop: 40 }}>Boss Drop Completion (Heatmap)</h2>
-      <table border="1" cellPadding="5" style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th>Boss</th>
-            {teamNames.map(team => (
-              <th key={team}>{team}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(heatmapData).map(([boss, points]) => (
-            <tr key={boss}>
-              <td><b>{boss}</b></td>
-              {points.map((pts, idx) => (
-                <td key={idx} style={{
-                  backgroundColor: `rgba(0, 255, 0, ${Math.min(1, pts / 30).toFixed(2)})`
-                }}>
-                  {pts.toFixed(1)}
-                </td>
+    <Router >
+      <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <header className="bg-white dark:bg-gray-800 shadow p-4 sticky top-0 z-10">
+          <div className="flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto space-y-2 sm:space-y-0 sm:space-x-4">
+            <h1 className="text-xl font-bold">Bingo Dashboard</h1>
+            <nav className="flex flex-wrap gap-2 justify-center">
+              <Link to="/" className="px-3 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">All Teams</Link>
+              {teams.map(team => (
+                <Link key={team} to={`/${team.toLowerCase()}`} className="px-3 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+                  {team}
+                </Link>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+            </nav>
+            <button onClick={() => setDarkMode(!darkMode)} className="text-sm text-blue-500 hover:underline">
+              Toggle {darkMode ? 'Light' : 'Dark'} Mode
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-grow p-4 max-w-6xl mx-auto w-full">
+          <Routes>
+            <Route path="/" element={<SummaryPage />} />
+            {teams.map(team => (
+              <Route key={team} path={`/${team.toLowerCase()}`} element={<TeamPage team={team} />} />
+            ))}
+          </Routes>
+        </main>
+
+        <footer className="text-center text-xs text-gray-500 p-4 bg-white dark:bg-gray-800">
+          Made by s59 for Mercenary Clan
+        </footer>
+      </div>
+    </Router>
   );
 }
+
+export default App;
