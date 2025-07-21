@@ -31,8 +31,13 @@ function TeamPage({ team }) {
           const itemName = row[4];
           const points = parseFloat(row[5]) || 0;
 
+<<<<<<< HEAD
           // Skip junk rows: empty names, 0 points, or numeric-only "items"
           if (!itemName || /^\d+$/.test(itemName.trim()) || points === 0) continue;
+=======
+          // Skip: no item name, no boss name, just numbers, or 0-point rows
+          if (!itemName || !currentBoss || /^\d+$/.test(itemName.trim()) || points === 0) continue;
+>>>>>>> 8bc5d38 (Local changes before pulling)
 
           cleaned.push({
             boss: currentBoss,
