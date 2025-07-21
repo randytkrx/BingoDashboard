@@ -10,6 +10,8 @@ function sanitizeItemName(name) {
 
 function TeamPage({ team }) {
   const [items, setItems] = useState([]);
+  const [filterBoss, setFilterBoss] = useState("All");
+
   const teamColumnIndex = {
     Team1: 7, Team2: 8, Team3: 9, Team4: 10, Team5: 11, Team6: 12
   }[team];
@@ -26,46 +28,52 @@ function TeamPage({ team }) {
           const row = rows[i];
           if (row[3] && !/max points/i.test(row[3])) currentBoss = row[3];
 
-          if (currentBoss && row[4]) {
-            const points = parseFloat(row[5]) || 0;
-            const gotDrop = row[teamColumnIndex]?.trim() === '1';
-            const item = row[4];
-            const itemImage = `https://oldschool.runescape.wiki/images/${sanitizeItemName(item)}_detail.png`;
+          const itemName = row[4];
+          const points = parseFloat(row[5]) || 0;
 
-            cleaned.push({
-              boss: currentBoss,
-              item,
-              points,
-              gotDrop,
-              image: itemImage,
-            });
-          }
+          // Skip junk rows: empty names, 0 points, or numeric-only "items"
+          if (!itemName || /^\d+$/.test(itemName.trim()) || points === 0) continue;
+
+          cleaned.push({
+            boss: currentBoss,
+            name: itemName,
+            points: points,
+            collected: row[teamColumnIndex],
+            image: `/items/${sanitizeItemName(itemName)}.webp`
+          });
         }
 
         setItems(cleaned);
       });
-  }, [team]);
+  }, [team, teamColumnIndex]);
+
+  const uniqueBosses = ["All", ...new Set(items.map(item => item.boss))];
+  const visibleItems = filterBoss === "All" ? items : items.filter(item => item.boss === filterBoss);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">{team} – Item Progress</h2>
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {items.map((item, idx) => (
-          <div key={idx} className="p-4 rounded shadow bg-white dark:bg-gray-800">
-            <div className="flex items-center space-x-4">
-              <img
-                src={item.image}
-                alt={item.item}
-                className="w-10 h-10 object-contain"
-                onError={(e) => (e.target.src = 'https://oldschool.runescape.wiki/images/Unknown_detail.png')}
-              />
-              <div>
-                <div className="font-semibold">{item.item}</div>
-                <div className="text-sm text-gray-500">{item.boss} — {item.points} pts</div>
-                <div className={item.gotDrop ? 'text-green-500' : 'text-red-500'}>
-                  {item.gotDrop ? '✓ Collected' : '✗ Missing'}
-                </div>
-              </div>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">{team} — Item Progress</h1>
+      <div className="mb-4">
+        <label className="mr-2">Filter by Boss:</label>
+        <select value={filterBoss} onChange={(e) => setFilterBoss(e.target.value)} className="p-2 rounded bg-gray-800 text-white">
+          {uniqueBosses.map(boss => (
+            <option key={boss} value={boss}>{boss}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {visibleItems.map((item, idx) => (
+          <div key={idx} className="bg-gray-900 p-4 rounded shadow">
+            <img
+              src={item.image}
+              alt={item.name}
+              className="w-8 h-8 inline-block mr-2"
+              onError={(e) => { e.target.onerror = null; e.target.src = `https://oldschool.runescape.wiki/images/${item.name.replace(/ /g, '_')}_detail.png`; }}
+            />
+            <div className="text-lg font-semibold">{item.name}</div>
+            <div className="text-sm text-gray-400">{item.boss} — {item.points} pts</div>
+            <div className={item.collected ? 'text-green-400' : 'text-red-500'}>
+              {item.collected ? '✓ Collected' : '✗ Missing'}
             </div>
           </div>
         ))}
