@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/BingoDashboard/static/css/main.aaf99f76.css",
-    "main.js": "/BingoDashboard/static/js/main.e04fc26c.js",
+    "main.css": "/BingoDashboard/static/css/main.110b14a1.css",
+    "main.js": "/BingoDashboard/static/js/main.c01af255.js",
     "index.html": "/BingoDashboard/index.html",
-    "main.aaf99f76.css.map": "/BingoDashboard/static/css/main.aaf99f76.css.map",
-    "main.e04fc26c.js.map": "/BingoDashboard/static/js/main.e04fc26c.js.map"
+    "main.110b14a1.css.map": "/BingoDashboard/static/css/main.110b14a1.css.map",
+    "main.c01af255.js.map": "/BingoDashboard/static/js/main.c01af255.js.map"
   },
   "entrypoints": [
-    "static/css/main.aaf99f76.css",
-    "static/js/main.e04fc26c.js"
+    "static/css/main.110b14a1.css",
+    "static/js/main.c01af255.js"
   ]
 }
